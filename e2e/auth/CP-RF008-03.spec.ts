@@ -2,13 +2,31 @@ import { test, expect } from '@playwright/test';
 
 test.describe('CP-RF008-03 - Invalid administrator password (too short)', () => {
   test('should reject password with less than 8 characters', async ({ page }) => {
-    // This test validates that passwords with less than 8 characters are invalid
+    // Log in as admin
+    await page.goto('/admin/login');
+    await page.fill('input[name="username"]', 'admin');
+    await page.fill('input[name="password"]', process.env.ADMIN_PASSWORD || 'admin123');
+    await page.click('button:has-text("Sign in")');
     
-    const invalidPassword = 'Admin'; // Less than 8 chars
+    // Wait for redirect to admin dashboard
+    await page.waitForURL('/admin', { timeout: 5000 });
     
-    // Verify password fails requirements
-    const hasMinLength = invalidPassword.length >= 8;
+    // Click on Create Admin User button
+    await page.click('button:has-text("Create Admin User")');
     
-    expect(hasMinLength).toBe(false); // Should fail - too short
+    // Wait for modal to appear
+    await expect(page.locator('text=Create New Admin User')).toBeVisible();
+    
+    // Fill in the form with password less than 8 characters
+    await page.fill('input[name="new-username"]', 'shortpwd');
+    await page.fill('input[name="new-password"]', 'Ad@1');
+    await page.fill('input[name="confirm-password"]', 'Ad@1');
+    
+    // Submit the form
+    await page.click('button:has-text("Create Admin")');
+    
+    // Verify error message appears
+    await expect(page.locator('[data-testid="error-message"]')).toBeVisible();
+    await expect(page.locator('text=Password must be at least 8 characters long')).toBeVisible();
   });
 });

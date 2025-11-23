@@ -14,8 +14,34 @@ test.describe('CP-RF011-06 - Add invalid style (invalid characters)', () => {
     // Verify admin dashboard loads correctly
     await expect(page.locator('text=Admin dashboard')).toBeVisible();
     
-    // Verify inventory items are displayed with valid names
-    const nameHeaders = page.locator('th:has-text("Name")');
-    await expect(nameHeaders).toBeVisible();
+    // Click on Manage Attributes button
+    await page.click('button:has-text("Manage Attributes")');
+    
+    // Wait for attribute manager modal to appear
+    await expect(page.locator('text=Attribute Manager')).toBeVisible();
+    
+    // Click on Styles tab
+    await page.click('button:has-text("Styles")');
+    
+    // Try to add style with numbers
+    await page.fill('input[placeholder*="style"]', 'Style123');
+    await page.click('button:has-text("Add")');
+    
+    // Verify error message appears
+    await expect(page.locator('text=Only letters, spaces, and hyphens are allowed')).toBeVisible();
+    
+    // Try with special characters
+    await page.fill('input[placeholder*="style"]', 'Style@#$');
+    await page.click('button:has-text("Add")');
+    
+    // Verify error message appears
+    await expect(page.locator('text=Only letters, spaces, and hyphens are allowed')).toBeVisible();
+    
+    // Try with underscore (should fail)
+    await page.fill('input[placeholder*="style"]', 'Style_Name');
+    await page.click('button:has-text("Add")');
+    
+    // Verify error message appears
+    await expect(page.locator('text=Only letters, spaces, and hyphens are allowed')).toBeVisible();
   });
 });

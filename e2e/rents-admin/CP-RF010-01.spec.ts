@@ -14,22 +14,30 @@ test.describe('CP-RF010-01 - Cancellation of valid rental', () => {
     // Verify we're on admin dashboard
     await expect(page.locator('text=Admin dashboard')).toBeVisible();
     
-    // Verify rental table structure with Cancel buttons
-    const rentalTable = page.locator('table').nth(1);
+    // Verify rental table has rentals
+    const rentalTable = page.locator('table').filter({ has: page.locator('th:has-text("Rental ID")') });
     await expect(rentalTable).toBeVisible();
     
-    // Verify Cancel button is present for active rentals
-    const cancelButton = page.locator('button:has-text("Cancel")');
-    const cancelButtonCount = await cancelButton.count();
+    // Get the initial count of rentals
+    const initialRows = rentalTable.locator('tbody tr').filter({ hasNotText: 'No rentals yet.' });
+    const initialCount = await initialRows.count();
+    expect(initialCount).toBeGreaterThan(0);
     
-    // If no rentals exist, the test passes as the structure is correct
-    if (cancelButtonCount > 0) {
-      // Click Cancel on first rental
-      await cancelButton.first().click();
-      
-      // Verify the status changed to canceled
-      const canceledStatus = page.locator('td:has-text("canceled")');
-      await expect(canceledStatus).toBeVisible({ timeout: 5000 });
-    }
+    // Verify Cancel Rental section is visible
+    await expect(page.locator('h2:has-text("Cancel Rental")')).toBeVisible();
+    
+    // Enter the rental ID in the cancel form (using rental ID "2")
+    await page.fill('input[name="rentalId"]', '2');
+    
+    // Click Cancel Rental button
+    await page.click('button:has-text("Cancel Rental")');
+    
+    // Wait for the rental to be removed from the list
+    await page.waitForTimeout(1000);
+    
+    // Verify the rental was removed from the table
+    const updatedRows = rentalTable.locator('tbody tr').filter({ hasNotText: 'No rentals yet.' });
+    const updatedCount = await updatedRows.count();
+    expect(updatedCount).toBe(initialCount - 1);
   });
 });

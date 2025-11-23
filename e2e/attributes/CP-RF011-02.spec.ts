@@ -14,7 +14,30 @@ test.describe('CP-RF011-02 - Add valid color', () => {
     // Verify admin dashboard displays items with colors
     await expect(page.locator('text=Admin dashboard')).toBeVisible();
     
-    // Verify items are displayed with their colors
-    await expect(page.locator('tbody tr')).toHaveCount(4); // 4 items in inventory
+    // Click on Manage Attributes button
+    await page.click('button:has-text("Manage Attributes")');
+    
+    // Wait for attribute manager modal to appear
+    await expect(page.locator('text=Attribute Manager')).toBeVisible();
+    
+    // Colors tab should be selected by default
+    await expect(page.locator('button:has-text("Colors").bg-blue-600, button:has-text("Colors")[class*="bg-blue"]')).toBeVisible();
+    
+    // Add new color "Bordo"
+    await page.fill('input[placeholder*="color"]', 'Bordo');
+    await page.click('button:has-text("Add")');
+    
+    // Verify bordo appears in the current colors list (lowercase)
+    await expect(page.locator('text=bordo').first()).toBeVisible();
+    
+    // Close attribute manager
+    await page.click('button:has-text("Close")');
+    
+    // Open Add New Dress form
+    await page.click('button:has-text("Add New Dress")');
+    
+    // Verify bordo is available in the color dropdown
+    const colorSelect = page.locator('select').filter({ has: page.locator('option:has-text("Bordo")') });
+    await expect(colorSelect).toBeVisible();
   });
 });

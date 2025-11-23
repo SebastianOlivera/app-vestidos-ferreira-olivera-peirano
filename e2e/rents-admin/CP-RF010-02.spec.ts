@@ -14,12 +14,17 @@ test.describe('CP-RF010-02 - Cancellation of nonexistent rental', () => {
     // Verify we're on admin dashboard
     await expect(page.locator('text=Admin dashboard')).toBeVisible();
     
-    // Attempt to cancel a nonexistent rental via API
-    const response = await page.request.post('/api/admin/rentals/99999/cancel');
+    // Verify the cancel section exists
+    await expect(page.locator('h2:has-text("Cancel Rental")')).toBeVisible();
     
-    // Verify the request returns 404 error
-    expect(response.status()).toBe(404);
-    const errorBody = await response.json();
-    expect(errorBody.error).toBe('Not found');
+    // Try to cancel with a fake rental ID
+    const fakeRentalId = '99999';
+    await page.fill('input[name="rentalId"]', fakeRentalId);
+    await page.click('button:has-text("Cancel Rental")');
+    
+    // Verify error message is displayed
+    const errorMessage = page.locator('[data-testid="cancel-error"]');
+    await expect(errorMessage).toBeVisible({ timeout: 5000 });
+    await expect(errorMessage).toContainText('Not found');
   });
 });

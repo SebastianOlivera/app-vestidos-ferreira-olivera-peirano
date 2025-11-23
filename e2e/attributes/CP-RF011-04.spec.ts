@@ -14,8 +14,26 @@ test.describe('CP-RF011-04 - Add invalid size (empty)', () => {
     // Verify we're on admin dashboard
     await expect(page.locator('text=Admin dashboard')).toBeVisible();
     
-    // Verify inventory items display with sizes
-    const inventorySection = page.locator('text=Inventory');
-    await expect(inventorySection).toBeVisible();
+    // Click on Manage Attributes button
+    await page.click('button:has-text("Manage Attributes")');
+    
+    // Wait for attribute manager modal to appear
+    await expect(page.locator('text=Attribute Manager')).toBeVisible();
+    
+    // Click on Sizes tab
+    await page.click('button:has-text("Sizes")');
+    
+    // Try to add empty size by clicking Add without typing anything
+    await page.click('button:has-text("Add")');
+    
+    // Verify error message appears
+    await expect(page.locator('text=Value cannot be empty')).toBeVisible();
+    
+    // Try with just spaces
+    await page.fill('input[placeholder*="size"]', '   ');
+    await page.click('button:has-text("Add")');
+    
+    // Verify error message still appears
+    await expect(page.locator('text=Value cannot be empty')).toBeVisible();
   });
 });

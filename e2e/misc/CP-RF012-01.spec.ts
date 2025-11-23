@@ -9,7 +9,7 @@ test.describe('CP-RF012-01 - FAQ visualization', () => {
     await expect(page.locator('text=Preguntas Frecuentes')).toBeVisible();
     
     // Verify FAQ questions are displayed
-    const faqItems = await page.locator('div:has(> h2)').all();
+    const faqItems = await page.locator('[data-testid="faq-question"]').all();
     expect(faqItems.length).toBeGreaterThan(0);
     
     // Verify specific FAQ questions are visible

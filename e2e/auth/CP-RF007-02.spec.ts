@@ -12,8 +12,15 @@ test.describe('CP-RF007-02 - Failed login with invalid credentials', () => {
     // Submit login form
     await page.click('button:has-text("Sign in")');
     
-    // Verify the form is still on login page (no redirect happened)
+    // Wait a moment for the error to appear
     await page.waitForTimeout(1000);
+    
+    // Verify error message is displayed
+    const errorMessage = page.locator('[data-testid="login-error"]');
+    await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toContainText('Invalid credentials');
+    
+    // Verify the form is still on login page (no redirect happened)
     expect(page.url()).toContain('/admin/login');
   });
 });
