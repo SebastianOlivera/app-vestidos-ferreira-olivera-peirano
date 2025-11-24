@@ -7,10 +7,18 @@ test('CP-RF001-04: Búsqueda con solo filtro de talla (M)', async ({ page }) => 
   await page.click('button:has-text("Search")');
 
   const cards = page.locator('.grid > div');
-  expect(await cards.count()).toBeGreaterThan(0);
+  const count = await cards.count();
+  expect(count).toBeGreaterThan(0);
 
-  for (let i = 0; i < await cards.count(); i++) {
-    const sizes = (await page.locator('p:has-text("Sizes")').innerText()).replace('Sizes:', '').split(',').map(s => s.trim().toUpperCase());
+  for (let i = 0; i < count; i++) {
+    const sizes = (
+      await cards.nth(i).locator('p:has-text("Sizes")').innerText()
+    )
+      .replace('Sizes:', '')
+      .split(',')
+      .map(s => s.trim().toUpperCase());
+
+    expect(sizes).toContain('M');
   }
 
 });
