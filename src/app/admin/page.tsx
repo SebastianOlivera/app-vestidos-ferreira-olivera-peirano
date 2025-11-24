@@ -29,7 +29,39 @@ export default async function Page() {
       <section className="mt-8">
         <h2 className="font-semibold">Inventory</h2>
         <p className="text-sm text-slate-600 dark:text-slate-400">Add/edit/delete can be wired to a database later.</p>
-        <div className="mt-3 overflow-x-auto">
+        <div className="mt-3 grid gap-4 lg:grid-cols-2">
+          <form action="/api/admin/items" method="POST" className="rounded-xl border p-4 space-y-3">
+            <input type="hidden" name="csrf" value={csrf} />
+            <input type="hidden" name="mode" value="create" />
+            <h3 className="font-medium">Alta de artículo</h3>
+            <input name="name" placeholder="Nombre" className="w-full rounded-lg border px-3 py-2 text-sm" required />
+            <input name="category" placeholder="Categoría" className="w-full rounded-lg border px-3 py-2 text-sm" required />
+            <input name="sizes" placeholder="Tallas (ej: 37, 38)" className="w-full rounded-lg border px-3 py-2 text-sm" required />
+            <input name="color" placeholder="Color" className="w-full rounded-lg border px-3 py-2 text-sm" required />
+            <input name="pricePerDay" type="number" min="1" placeholder="Precio por día" className="w-full rounded-lg border px-3 py-2 text-sm" required />
+            <button className="rounded-lg bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white">Guardar</button>
+          </form>
+
+          <div className="space-y-3">
+            <form action="/api/admin/items" method="POST" className="rounded-xl border p-4 space-y-2">
+              <input type="hidden" name="csrf" value={csrf} />
+              <input type="hidden" name="mode" value="delete" />
+              <h3 className="font-medium">Eliminar artículo</h3>
+              <input name="id" type="number" placeholder="ID" className="w-full rounded-lg border px-3 py-2 text-sm" required />
+              <button className="rounded-lg border px-4 py-2 text-sm">Eliminar</button>
+            </form>
+            <form action="/api/admin/items" method="POST" className="rounded-xl border p-4 space-y-2">
+              <input type="hidden" name="csrf" value={csrf} />
+              <input type="hidden" name="mode" value="update-price" />
+              <h3 className="font-medium">Editar precio</h3>
+              <input name="id" type="number" placeholder="ID" className="w-full rounded-lg border px-3 py-2 text-sm" required />
+              <input name="pricePerDay" type="number" min="1" placeholder="Nuevo precio por día" className="w-full rounded-lg border px-3 py-2 text-sm" required />
+              <button className="rounded-lg border px-4 py-2 text-sm">Guardar cambios</button>
+            </form>
+          </div>
+        </div>
+
+        <div className="mt-6 overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
               <tr className="text-left">

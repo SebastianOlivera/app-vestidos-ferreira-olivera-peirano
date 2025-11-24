@@ -26,6 +26,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 });
   }
 
+  if (!email.includes('@')) {
+    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+  }
+
   const item = getItem(itemId);
   if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
   if (end < start) return NextResponse.json({ error: "End date must be after start date" }, { status: 400 });

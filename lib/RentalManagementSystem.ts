@@ -24,7 +24,7 @@ export type Rental = {
 };
 
 // In-memory store for demo. Replace with a DB in production.
-const items: Item[] = [
+let items: Item[] = [
   {
     id: 1,
     name: "Silk Evening Gown",
@@ -73,6 +73,30 @@ const items: Item[] = [
     images: ["/images/dresses/velvet-cocktail-dress.jpg"],
     alt: "Velvet cocktail dress in deep tones",
   },
+  {
+    id: 5,
+    name: "Zapatos Negros Clásicos",
+    category: "shoes",
+    pricePerDay: 29,
+    sizes: ["37", "38", "39"],
+    color: "Negro",
+    style: "formal",
+    description: "Zapatos de tacón negros, acabado en cuero y plantilla acolchada.",
+    images: ["/images/dresses/black-tie-dress.jpg"],
+    alt: "Zapatos de tacón negros clásicos",
+  },
+  {
+    id: 6,
+    name: "Zapatillas Blancas Urbanas",
+    category: "shoes",
+    pricePerDay: 19,
+    sizes: ["38", "40", "41"],
+    color: "Blanco",
+    style: "casual",
+    description: "Zapatillas blancas cómodas para uso diario.",
+    images: ["/images/dresses/floral-midi-dress.jpg"],
+    alt: "Zapatillas blancas urbanas",
+  },
 ];
 
 let rentals: Rental[] = [];
@@ -104,6 +128,34 @@ export function getItem(id: number) {
 
 export function getItemRentals(itemId: number) {
   return rentals.filter((r) => r.itemId === itemId && r.status === "active");
+}
+
+function nextItemId() {
+  return items.reduce((max, it) => Math.max(max, it.id), 0) + 1;
+}
+
+export function addItem(data: Omit<Item, "id"> & { id?: number }) {
+  const id = data.id ?? nextItemId();
+  const exists = items.some((i) => i.id === id);
+  if (exists) return { error: "ID already exists" as const };
+  const item: Item = { ...data, id };
+  items.push(item);
+  return { item };
+}
+
+export function deleteItem(id: number) {
+  const before = items.length;
+  items = items.filter((i) => i.id !== id);
+  if (items.length === before) return { error: "Not found" as const };
+  rentals = rentals.filter((r) => r.itemId !== id);
+  return { ok: true as const };
+}
+
+export function updateItemPrice(id: number, pricePerDay: number) {
+  const target = items.find((i) => i.id === id);
+  if (!target) return { error: "Not found" as const };
+  target.pricePerDay = pricePerDay;
+  return { item: target };
 }
 
 export function hasOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string) {

@@ -64,7 +64,7 @@ export default function Page({ searchParams }: { searchParams: SearchParams }) {
           </div>
         ))}
         {items.length === 0 && (
-          <p className="text-sm text-slate-600 dark:text-slate-400">No items match your filters.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">No se encontraron resultados.</p>
         )}
       </div>
     </div>
