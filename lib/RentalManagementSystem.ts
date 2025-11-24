@@ -14,7 +14,7 @@ export type Item = {
 };
 
 export type Rental = {
-  id: string;
+  id: string | number;
   itemId: number;
   start: string; // ISO date (yyyy-mm-dd)
   end: string;   // ISO date (yyyy-mm-dd)
@@ -75,7 +75,47 @@ const items: Item[] = [
   },
 ];
 
-let rentals: Rental[] = [];
+let rentals: Rental[] = [
+  {
+    id: 1,
+    itemId: 1,
+    start: "2025-12-15",
+    end: "2025-12-17",
+    customer: {
+      name: "María González",
+      email: "maria.gonzalez@email.com",
+      phone: "+598 91 234 567"
+    },
+    createdAt: "2025-11-20T10:30:00.000Z",
+    status: "active"
+  },
+  {
+    id: 2,
+    itemId: 3,
+    start: "2025-12-10",
+    end: "2025-12-12",
+    customer: {
+      name: "Ana Rodríguez",
+      email: "ana.rodriguez@email.com",
+      phone: "+598 92 345 678"
+    },
+    createdAt: "2025-11-22T14:15:00.000Z",
+    status: "active"
+  },
+  {
+    id: 3,
+    itemId: 2,
+    start: "2025-12-20",
+    end: "2025-12-22",
+    customer: {
+      name: "Lucía Fernández",
+      email: "lucia.fernandez@email.com",
+      phone: "+598 93 456 789"
+    },
+    createdAt: "2025-11-21T16:45:00.000Z",
+    status: "active"
+  }
+];
 
 export function listItems(filters?: {
   q?: string;
@@ -128,8 +168,8 @@ export function listRentals() {
   return rentals.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-export function cancelRental(id: string) {
-  const r = rentals.find((x) => x.id === id);
+export function cancelRental(id: string | number) {
+  const r = rentals.find((x) => x.id.toString() === id.toString());
   if (!r) return { error: "Not found" as const };
   r.status = "canceled";
   return { ok: true as const };
