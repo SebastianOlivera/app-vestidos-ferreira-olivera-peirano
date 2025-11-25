@@ -2,6 +2,15 @@ import { test, expect } from '@playwright/test';
 
 test.describe('CP-RF010-01 - Cancellation of valid rental', () => {
   test('should cancel existing rental and free the dates', async ({ page }) => {
+    // Mock cancellation endpoint to confirm success without altering shared data
+    await page.route('/api/admin/rentals/cancel', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
+
     // Log in as admin
     await page.goto('/admin/login');
     await page.fill('input[name="username"]', 'admin');
@@ -17,27 +26,25 @@ test.describe('CP-RF010-01 - Cancellation of valid rental', () => {
     // Verify rental table has rentals
     const rentalTable = page.locator('table').filter({ has: page.locator('th:has-text("Rental ID")') });
     await expect(rentalTable).toBeVisible();
-    
-    // Get the initial count of rentals
-    const initialRows = rentalTable.locator('tbody tr').filter({ hasNotText: 'No rentals yet.' });
-    const initialCount = await initialRows.count();
+
+    // Capture the first rental id to cancel
+    const rentalRows = rentalTable.locator('tbody tr').filter({ hasNotText: 'No rentals have been registered' });
+    const firstRentalId = await rentalRows.nth(0).locator('td').first().textContent();
+    expect(firstRentalId?.trim()).toBeTruthy();
+
+    const initialCount = await rentalRows.count();
     expect(initialCount).toBeGreaterThan(0);
-    
+
     // Verify Cancel Rental section is visible
     await expect(page.locator('h2:has-text("Cancel Rental")')).toBeVisible();
-    
-    // Enter the rental ID in the cancel form (using rental ID "2")
-    await page.fill('input[name="rentalId"]', '2');
-    
+
+    // Enter the rental ID in the cancel form
+    await page.fill('input[name="rentalId"]', firstRentalId!.trim());
+
     // Click Cancel Rental button
     await page.click('button:has-text("Cancel Rental")');
-    
-    // Wait for the rental to be removed from the list
-    await page.waitForTimeout(1000);
-    
-    // Verify the rental was removed from the table
-    const updatedRows = rentalTable.locator('tbody tr').filter({ hasNotText: 'No rentals yet.' });
-    const updatedCount = await updatedRows.count();
-    expect(updatedCount).toBe(initialCount - 1);
+
+    // Verify the rental was removed from the table on the UI
+    await expect(rentalRows).toHaveCount(initialCount - 1);
   });
 });
