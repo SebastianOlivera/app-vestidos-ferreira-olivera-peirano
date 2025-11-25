@@ -8,7 +8,6 @@ test('CP-RF005-02: Reject rental with invalid email', async ({ page }) => {
   await page.getByLabel('Phone').fill('+598866674');
   await page.getByLabel('Start date').fill('2026-10-15');
   await page.getByLabel('End date').fill('2026-10-18');
-
   await page.click('button:has-text("Request rental")');
 
   // 1) Chequear estado de validación
