@@ -8,7 +8,7 @@ test('CP-RF005-03: Prevent rental with invalid date range', async ({ page }) => 
   await page.fill('input[name="phone"]', '12345');
   await page.fill('input[name="start"]', '2026-10-12');
   await page.fill('input[name="end"]', '2026-10-10');
-
+  await page.waitForTimeout(500);
   const [response] = await Promise.all([
     page.waitForResponse('/api/rentals'),
     page.click('button:has-text("Request rental")'),
