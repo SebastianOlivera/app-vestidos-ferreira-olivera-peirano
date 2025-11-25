@@ -2,6 +2,15 @@ import { test, expect } from '@playwright/test';
 
 test.describe('CP-RF010-02 - Cancellation of nonexistent rental', () => {
   test('should show error when attempting to cancel nonexistent rental', async ({ page }) => {
+    // Mock cancellation endpoint to return not found
+    await page.route('/api/admin/rentals/cancel', async (route) => {
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Rental not found' }),
+      });
+    });
+
     // Log in as admin
     await page.goto('/admin/login');
     await page.fill('input[name="username"]', 'admin');
@@ -25,6 +34,6 @@ test.describe('CP-RF010-02 - Cancellation of nonexistent rental', () => {
     // Verify error message is displayed
     const errorMessage = page.locator('[data-testid="cancel-error"]');
     await expect(errorMessage).toBeVisible({ timeout: 5000 });
-    await expect(errorMessage).toContainText('Not found');
+    await expect(errorMessage).toContainText('Rental not found');
   });
 });

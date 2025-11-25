@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('CP-RF009-01 - Display of rental list ordered', () => {
-  test('should display rentals ordered by creation date in descending order', async ({ page }) => {
+  test('should display rentals ordered by pickup date in ascending order', async ({ page }) => {
     // Log in as admin
     await page.goto('/admin/login');
     await page.fill('input[name="username"]', 'admin');
@@ -21,24 +21,26 @@ test.describe('CP-RF009-01 - Display of rental list ordered', () => {
     // Verify rental table structure
     const rentalTable = page.locator('table').filter({ has: page.locator('th:has-text("Rental ID")') });
     await expect(rentalTable).toBeVisible();
-    
-    // Get all rental rows (excluding header)
-    const rows = rentalTable.locator('tbody tr');
-    await expect(rows).toHaveCount(3);
-    
-    // Verify the order by checking customer names
-    // Expected order (by createdAt descending):
-    // 1. Ana Rodríguez (2025-11-22T14:15:00.000Z) - most recent
-    // 2. Lucía Fernández (2025-11-21T16:45:00.000Z)
-    // 3. María González (2025-11-20T10:30:00.000Z) - oldest
-    
-    const firstRow = rows.nth(0);
-    await expect(firstRow).toContainText('Ana Rodríguez');
-    
-    const secondRow = rows.nth(1);
-    await expect(secondRow).toContainText('Lucía Fernández');
-    
-    const thirdRow = rows.nth(2);
-    await expect(thirdRow).toContainText('María González');
+
+    // Collect start dates from all rentals (excluding the "no rentals" row)
+    const rows = rentalTable.locator('tbody tr').filter({ hasNotText: 'No rentals have been registered' });
+    const rowsCount = await rows.count();
+    expect(rowsCount).toBeGreaterThan(2);
+
+    const startDates = await rows.evaluateAll((rowElements) =>
+      rowElements.map((row) => {
+        const datesCell = row.querySelector('td:nth-child(3)');
+        const rawDates = datesCell?.textContent ?? '';
+        const [startDate] = rawDates.split('→').map((s) => s.trim());
+        return startDate;
+      })
+    );
+
+    // Validate ascending order by comparing each pair of consecutive dates
+    for (let i = 1; i < startDates.length; i++) {
+      const previous = startDates[i - 1];
+      const current = startDates[i];
+      expect(new Date(previous).getTime()).toBeLessThanOrEqual(new Date(current).getTime());
+    }
   });
 });

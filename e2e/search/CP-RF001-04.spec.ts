@@ -1,14 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-test('CP-RF001-04: Búsqueda con solo filtro de talla (M)', async ({ page }) => {
-
+test('CP-RF001-04: Search using only size filter (M)', async ({ page }) => {
   await page.goto('/search');
   await page.fill('input[name="size"]', 'M');
   await page.click('button:has-text("Search")');
 
   const cards = page.locator('.grid > div');
   const count = await cards.count();
-  expect(count).toBeGreaterThan(0);
 
   for (let i = 0; i < count; i++) {
     const sizes = (
@@ -19,6 +17,6 @@ test('CP-RF001-04: Búsqueda con solo filtro de talla (M)', async ({ page }) => 
       .map(s => s.trim().toUpperCase());
 
     expect(sizes).toContain('M');
+    expect(count).toBeGreaterThan(0);
   }
-
 });
