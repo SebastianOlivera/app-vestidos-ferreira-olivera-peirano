@@ -8,8 +8,8 @@ test('CP-RF005-01: Submit a valid rental request', async ({ page }) => {
   await page.fill('input[name="phone"]', '099999999');
   await page.fill('input[name="start"]', '2026-10-10');
   await page.fill('input[name="end"]', '2026-10-12');
-  
   await page.click('button:has-text("Request rental")');
+  await page.waitForTimeout(500);
 
   expect(page.url()).toContain('success=1');
 });
