@@ -11,6 +11,7 @@ Recommended structure:
 - public/
   - images/
     - dresses/         # dress photos for listings
+    - shoes/           # shoe photos and illustrations
     - logos/           # brand assets
     - hero/            # hero/marketing imagery
 
@@ -28,3 +29,6 @@ Example filenames referenced in code:
 - /images/dresses/black-tie-dress.jpg
 - /images/dresses/floral-midi-dress.jpg
 - /images/dresses/velvet-cocktail-dress.jpg
+- /images/shoes/black-strappy-heels.svg
+- /images/shoes/champagne-block-heels.svg
+- /images/shoes/metallic-platform-sandals.svg

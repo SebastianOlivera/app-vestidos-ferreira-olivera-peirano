@@ -73,6 +73,42 @@ const items: Item[] = [
     images: ["/images/dresses/velvet-cocktail-dress.jpg"],
     alt: "Velvet cocktail dress in deep tones",
   },
+  {
+    id: 5,
+    name: "Black Strappy Heels",
+    category: "shoes",
+    pricePerDay: 35,
+    sizes: ["36", "37", "38", "39", "40"],
+    color: "black",
+    style: "stiletto",
+    description: "Sleek black strappy heels with a slender heel for formal looks.",
+    images: ["/images/shoes/black-strappy-heels.svg"],
+    alt: "Pair of black strappy stiletto heels",
+  },
+  {
+    id: 6,
+    name: "Champagne Block Heels",
+    category: "shoes",
+    pricePerDay: 32,
+    sizes: ["36", "37", "38", "39", "40", "41"],
+    color: "champagne",
+    style: "block-heel",
+    description: "Comfortable champagne block heels ideal for weddings and daytime events.",
+    images: ["/images/shoes/champagne-block-heels.svg"],
+    alt: "Champagne-toned block heels with ankle strap",
+  },
+  {
+    id: 7,
+    name: "Metallic Platform Sandals",
+    category: "shoes",
+    pricePerDay: 38,
+    sizes: ["37", "38", "39", "40", "41"],
+    color: "silver",
+    style: "platform",
+    description: "Shimmering silver platform sandals that add height and shine.",
+    images: ["/images/shoes/metallic-platform-sandals.svg"],
+    alt: "Silver metallic platform sandals",
+  },
 ];
 
 let rentals: Rental[] = [
@@ -165,12 +201,30 @@ export function createRental(data: Omit<Rental, "id" | "createdAt" | "status">) 
 }
 
 export function listRentals() {
-  return rentals.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return rentals
+    .slice()
+    .sort((a, b) => a.start.localeCompare(b.start) || a.createdAt.localeCompare(b.createdAt));
 }
 
 export function cancelRental(id: string | number) {
-  const r = rentals.find((x) => x.id.toString() === id.toString());
-  if (!r) return { error: "Not found" as const };
-  r.status = "canceled";
+  const idx = rentals.findIndex((x) => x.id.toString() === id.toString());
+  if (idx === -1) return { error: "Rental not found" as const };
+  rentals.splice(idx, 1);
+  return { ok: true as const };
+}
+
+export function updateItemPrice(id: number, pricePerDay: number) {
+  const item = items.find((i) => i.id === id);
+  if (!item) return { error: "Item not found" as const };
+  item.pricePerDay = pricePerDay;
+  return { item };
+}
+
+export function deleteItem(id: number) {
+  const idx = items.findIndex((i) => i.id === id);
+  if (idx === -1) return { error: "Item not found" as const };
+
+  items.splice(idx, 1);
+  rentals = rentals.filter((r) => r.itemId !== id);
   return { ok: true as const };
 }
