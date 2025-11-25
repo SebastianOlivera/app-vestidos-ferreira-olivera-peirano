@@ -25,15 +25,19 @@ export default function InventorySection({ initialItems }: InventorySectionProps
   const [showAttributeManager, setShowAttributeManager] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [availableColors, setAvailableColors] = useState(['black', 'white', 'red', 'blue', 'champagne', 'burgundy', 'floral', 'navy', 'emerald']);
   const [availableSizes, setAvailableSizes] = useState(['XS', 'S', 'M', 'L', 'XL']);
   const [availableStyles, setAvailableStyles] = useState(['evening', 'cocktail', 'black-tie', 'daytime', 'casual', 'formal']);
+  const [editId, setEditId] = useState('');
+  const [newPrice, setNewPrice] = useState('');
   const [nextId, setNextId] = useState(() => {
-    const maxId = Math.max(...initialItems.map(item => 
+    const maxId = Math.max(...initialItems.map(item =>
       typeof item.id === 'number' ? item.id : 0
     ));
     return maxId + 1;
   });
+  const [deleteId, setDeleteId] = useState('');
 
   const handleAddAttribute = (type: 'color' | 'size' | 'style', value: string) => {
     switch (type) {
@@ -52,6 +56,41 @@ export default function InventorySection({ initialItems }: InventorySectionProps
   const handleAdminCreated = (message: string) => {
     setSuccessMessage(message);
     setTimeout(() => setSuccessMessage(''), 5000);
+  };
+
+  const handlePriceUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    const idNumber = Number(editId);
+    const priceNumber = Number(newPrice);
+
+    if (!idNumber || priceNumber <= 0 || Number.isNaN(priceNumber)) {
+      setErrorMessage('Please enter a valid item ID and price.');
+      return;
+    }
+
+    const res = await fetch('/api/admin/items/price', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: idNumber, pricePerDay: priceNumber }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setErrorMessage(data.error || 'Could not update price.');
+      return;
+    }
+
+    const data = await res.json();
+    const updatedItem = data.item as AdminItem;
+    setItems(items.map((item) => item.id === updatedItem.id ? { ...item, pricePerDay: updatedItem.pricePerDay } : item));
+    setSuccessMessage(`Price updated for ${updatedItem.name}.`);
+    setEditId('');
+    setNewPrice('');
   };
 
   const handleAddDress = (newDress: {
@@ -106,6 +145,92 @@ export default function InventorySection({ initialItems }: InventorySectionProps
           <p className="text-sm text-green-600 dark:text-green-400">{successMessage}</p>
         </div>
       )}
+      {errorMessage && (
+        <div className="mt-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
+        </div>
+      )}
+      <form onSubmit={handlePriceUpdate} className="mt-4 grid gap-3 rounded-lg border p-4 bg-white dark:bg-slate-900">
+        <h3 className="font-semibold">Update Item Price</h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex flex-col gap-1 text-sm">
+            Item ID
+            <input
+              id="edit-id"
+              aria-label="ID"
+              value={editId}
+              onChange={(e) => setEditId(e.target.value)}
+              className="rounded-lg border px-3 py-2 dark:bg-slate-800"
+              placeholder="e.g. 1"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            New price per day ($)
+            <input
+              id="new-price"
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
+              className="rounded-lg border px-3 py-2 dark:bg-slate-800"
+              placeholder="e.g. 120"
+              type="number"
+              min="0"
+              step="0.01"
+            />
+          </label>
+        </div>
+        <button type="submit" className="self-start rounded-lg bg-blue-600 px-4 py-2 text-white text-sm font-semibold hover:bg-blue-700">
+          Update price
+        </button>
+      </form>
+
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setErrorMessage('');
+          setSuccessMessage('');
+
+          const idNumber = Number(deleteId);
+          if (!idNumber) {
+            setErrorMessage('Please enter a valid item ID.');
+            return;
+          }
+
+          const res = await fetch('/api/admin/items/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: idNumber }),
+          });
+
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            setErrorMessage(data.error || 'Could not delete item.');
+            return;
+          }
+
+          setItems(items.filter((i) => i.id !== idNumber));
+          setSuccessMessage('Item deleted successfully.');
+          setDeleteId('');
+        }}
+        className="mt-4 grid gap-3 rounded-lg border p-4 bg-white dark:bg-slate-900"
+      >
+        <h3 className="font-semibold">Delete Item</h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex flex-col gap-1 text-sm">
+            Item ID
+            <input
+              id="delete-id"
+              value={deleteId}
+              onChange={(e) => setDeleteId(e.target.value)}
+              className="rounded-lg border px-3 py-2 dark:bg-slate-800"
+              placeholder="e.g. 1"
+              aria-label="Delete item ID"
+            />
+          </label>
+        </div>
+        <button type="submit" className="self-start rounded-lg bg-red-600 px-4 py-2 text-white text-sm font-semibold hover:bg-red-700">
+          Delete
+        </button>
+      </form>
       {showForm && (
         <AddDressForm
           onAdd={handleAddDress}

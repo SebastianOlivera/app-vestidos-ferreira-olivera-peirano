@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 480" role="img" aria-label="Champagne block heels">
+  <defs>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fef3c7" />
+      <stop offset="100%" stop-color="#f5e0b7" />
+    </linearGradient>
+  </defs>
+  <rect width="360" height="480" fill="url(#g2)" rx="28" />
+  <path d="M70 340 Q130 280 160 250 L210 230 Q240 240 240 260 L210 300 L170 360 Z" fill="#f1d4a8" opacity="0.9" />
+  <rect x="200" y="300" width="40" height="70" rx="8" fill="#d6b787" opacity="0.8" />
+  <path d="M180 330 L270 250 Q290 240 300 250 Q310 270 290 290 L230 340 Z" fill="#e2c99c" opacity="0.9" />
+  <circle cx="120" cy="140" r="48" fill="#f7e3bd" opacity="0.8" />
+  <text x="50%" y="90%" text-anchor="middle" fill="#7c2d12" font-family="'Inter', 'Helvetica', 'Arial', sans-serif" font-size="24">Champagne Block Heels</text>
+</svg>

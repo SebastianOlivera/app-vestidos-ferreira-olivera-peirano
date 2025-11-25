@@ -39,7 +39,7 @@ export default function RentalsTable({ initialRentals, csrf }: RentalsTableProps
 
       if (response.ok) {
         // Remove the rental from the list
-        setRentals(rentals.filter(r => r.id.toString() !== rentalId));
+        setRentals((prev) => prev.filter((r) => r.id.toString() !== rentalId));
         // Clear the input
         (e.target as HTMLFormElement).reset();
         setIsLoading(false);
@@ -86,7 +86,9 @@ export default function RentalsTable({ initialRentals, csrf }: RentalsTableProps
               ))}
               {rentals.length === 0 && (
                 <tr>
-                  <td className="py-3 text-slate-500" colSpan={5}>No rentals yet.</td>
+                  <td className="py-3 text-slate-500" colSpan={5}>
+                    No rentals have been registered
+                  </td>
                 </tr>
               )}
             </tbody>
