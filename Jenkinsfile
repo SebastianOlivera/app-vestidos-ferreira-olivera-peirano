@@ -1,43 +1,62 @@
 pipeline {
     agent any
-    
+
     environment {
-        DOCKER_IMAGE = 'vestidos-app'
-        DOCKER_TAG = "${BUILD_NUMBER}"
+        APP_NAME = "vestidos-app"
+        TAG = "${BUILD_NUMBER}"
     }
-    
+
     stages {
+
         stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Install deps & Lint') {
             steps {
-                checkout scm
+                sh """
+                    docker run --rm -v \$(pwd):/app -w /app node:20-alpine sh -c "
+                        npm ci &&
+                        npm run lint
+                    "
+                """
             }
         }
-        
-        stage('Build Docker Image') {
+
+        stage('Run E2E Tests') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                sh """
+                    docker run --rm --ipc=host --shm-size=2gb \
+                        -v \$(pwd):/app -w /app \
+                        mcr.microsoft.com/playwright:v1.48.0-noble sh -c "
+                            npm ci &&
+                            npx playwright install --with-deps &&
+                            npm run test:e2e
+                        "
+                """
             }
         }
-        
+
+        stage('Build Production Image') {
+            steps {
+                sh "docker build -t ${APP_NAME}:${TAG} ."
+                sh "docker tag ${APP_NAME}:${TAG} ${APP_NAME}:latest"
+            }
+        }
+
         stage('Deploy') {
+            when { branch 'main' } // optional safety
             steps {
-                sh "docker stop ${DOCKER_IMAGE} || true"
-                sh "docker rm ${DOCKER_IMAGE} || true"
-                sh "docker run -d -p 3000:3000 --name ${DOCKER_IMAGE} ${DOCKER_IMAGE}:latest"
+                sh "docker stop ${APP_NAME} || true"
+                sh "docker rm ${APP_NAME} || true"
+                sh "docker run -d -p 3000:3000 --name ${APP_NAME} ${APP_NAME}:latest"
             }
         }
     }
-    
+
     post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed.'
-        }
-        always {
-            sh 'docker image prune -f || true'
-        }
+        success { echo "🚀 Deployed successfully after passing E2E tests" }
+        failure { echo "❌ Build FAILED — App not deployed" }
+        always { sh "docker image prune -f || true" }
     }
 }
