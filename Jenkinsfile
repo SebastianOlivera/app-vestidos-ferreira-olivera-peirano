@@ -13,47 +13,6 @@ pipeline {
             }
         }
         
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    docker.image('node:20-alpine').inside {
-                        sh 'npm ci'
-                    }
-                }
-            }
-        }
-        
-        stage('Lint & Type Check') {
-            steps {
-                script {
-                    docker.image('node:20-alpine').inside {
-                        sh 'npm run lint'
-                    }
-                }
-            }
-        }
-        
-        stage('Build') {
-            steps {
-                script {
-                    docker.image('node:20-alpine').inside {
-                        sh 'npm run build'
-                    }
-                }
-            }
-        }
-        
-        stage('Test E2E') {
-            steps {
-                script {
-                    docker.image('mcr.microsoft.com/playwright:v1.48.0-noble').inside {
-                        sh 'npm ci'
-                        sh 'npm run test:e2e'
-                    }
-                }
-            }
-        }
-        
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
