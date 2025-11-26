@@ -4,20 +4,21 @@ pipeline {
     environment {
         APP_NAME = "vestidos-app"
         TAG = "${BUILD_NUMBER}"
-        APP_DIR = "app-alquiler"   // <-- project folder
     }
 
     stages {
 
         stage('Checkout') {
-            steps { checkout scm }
+            steps {
+                checkout scm
+            }
         }
 
         stage('Install deps & Lint') {
             steps {
                 sh """
                     docker run --rm \
-                        -v \$(pwd)/${APP_DIR}:/app \
+                        -v \$(pwd):/app \
                         -w /app node:20-alpine sh -c "
                             npm install &&
                             npm run lint
@@ -30,7 +31,7 @@ pipeline {
             steps {
                 sh """
                     docker run --rm --ipc=host --shm-size=2gb \
-                        -v \$(pwd)/${APP_DIR}:/app \
+                        -v \$(pwd):/app \
                         -w /app mcr.microsoft.com/playwright:v1.48.0-noble sh -c "
                             npm install &&
                             npx playwright install --with-deps &&
@@ -48,7 +49,7 @@ pipeline {
         }
 
         stage('Deploy') {
-            when { branch 'main' } // safer
+            when { branch 'main' } // opcional, pero recomendable
             steps {
                 sh "docker stop ${APP_NAME} || true"
                 sh "docker rm ${APP_NAME} || true"
@@ -58,8 +59,14 @@ pipeline {
     }
 
     post {
-        success { echo "🚀 Deployed successfully after tests passed" }
-        failure { echo "❌ Build FAILED — App not deployed" }
-        always { sh "docker image prune -f || true" }
+        success {
+            echo "🚀 Deployed successfully after tests passed"
+        }
+        failure {
+            echo "❌ Build FAILED — App not deployed"
+        }
+        always {
+            sh "docker image prune -f || true"
+        }
     }
 }
