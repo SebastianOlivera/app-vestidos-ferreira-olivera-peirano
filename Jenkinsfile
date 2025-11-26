@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         APP_NAME = "vestidos-app"
-        TAG = "${BUILD_NUMBER}"
+        TAG      = "${BUILD_NUMBER}"
+        IMAGE    = "${APP_NAME}:${TAG}"
     }
 
     stages {
@@ -14,58 +15,65 @@ pipeline {
             }
         }
 
-        stage('Install deps & Lint') {
+        // Build one image that already has the code + node_modules + build
+        stage('Build CI/Runtime Image') {
             steps {
                 sh """
-                    docker run --rm \
-                        -v \$(pwd):/app \
-                        -w /app node:20-alpine sh -c "
-                            npm install &&
-                            npm run lint
-                        "
+                    docker build -t ${IMAGE} .
                 """
             }
         }
 
-        stage('Run E2E Tests') {
+        // Run lint inside the built image (no mounts)
+        stage('Lint') {
             steps {
                 sh """
-                    docker run --rm --ipc=host --shm-size=2gb \
-                        -v \$(pwd):/app \
-                        -w /app mcr.microsoft.com/playwright:v1.48.0-noble sh -c "
-                            npm install &&
-                            npx playwright install --with-deps &&
-                            npm run test:e2e
-                        "
+                    docker run --rm ${IMAGE} sh -c '
+                        npm run lint
+                    '
                 """
             }
         }
 
-        stage('Build Production Image') {
+        // Run Playwright E2E inside the same image
+        stage('E2E Tests') {
             steps {
-                sh "docker build -t ${APP_NAME}:${TAG} ."
-                sh "docker tag ${APP_NAME}:${TAG} ${APP_NAME}:latest"
+                sh """
+                    docker run --rm --ipc=host --shm-size=2gb ${IMAGE} sh -c '
+                        npx playwright install --with-deps &&
+                        npm run test:e2e
+                    '
+                """
             }
         }
 
+        // Only if everything above passed, tag and deploy
         stage('Deploy') {
-            when { branch 'main' } // opcional, pero recomendable
+            when {
+                branch 'main'   // optional, but safer
+            }
             steps {
-                sh "docker stop ${APP_NAME} || true"
-                sh "docker rm ${APP_NAME} || true"
-                sh "docker run -d -p 3000:3000 --name ${APP_NAME} ${APP_NAME}:latest"
+                sh """
+                    docker tag ${IMAGE} ${APP_NAME}:latest
+
+                    docker stop ${APP_NAME} || true
+                    docker rm ${APP_NAME}   || true
+
+                    docker run -d -p 3000:3000 --name ${APP_NAME} ${APP_NAME}:latest
+                """
             }
         }
     }
 
     post {
         success {
-            echo "🚀 Deployed successfully after tests passed"
+            echo "🚀 Pipeline passed (lint + E2E) and deployment completed."
         }
         failure {
-            echo "❌ Build FAILED — App not deployed"
+            echo "❌ Pipeline failed. App was not (re)deployed."
         }
         always {
+            // Clean dangling images but don't break the build if this fails
             sh "docker image prune -f || true"
         }
     }
