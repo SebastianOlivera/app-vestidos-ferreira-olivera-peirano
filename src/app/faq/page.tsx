@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 type FAQItem = {
   id: string;
@@ -42,12 +43,12 @@ export default function FAQPage() {
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900 dark:from-slate-950 dark:to-slate-900 dark:text-slate-100">
       <header className="sticky top-0 z-30 backdrop-blur bg-white/70 dark:bg-slate-950/60 border-b border-slate-200/60 dark:border-slate-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <a href="/" className="font-extrabold text-xl tracking-tight">
+          <Link href="/" className="font-extrabold text-xl tracking-tight">
             GlamRent
-          </a>
-          <a href="/" className="text-sm hover:text-fuchsia-600">
+          </Link>
+          <Link href="/" className="text-sm hover:text-fuchsia-600">
             ← Back to home
-          </a>
+          </Link>
         </div>
       </header>
 
@@ -107,12 +108,12 @@ export default function FAQPage() {
           <p className="text-fuchsia-800 dark:text-fuchsia-200 text-sm mb-3">
             Estamos aquí para ayudarte. Contáctanos si tienes más preguntas.
           </p>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center rounded-lg bg-fuchsia-600 text-white px-4 py-2 text-sm font-medium hover:bg-fuchsia-500"
           >
             Contacto
-          </a>
+          </Link>
         </div>
       </main>
     </div>

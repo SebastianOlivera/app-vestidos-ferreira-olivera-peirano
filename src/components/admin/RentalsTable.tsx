@@ -48,7 +48,7 @@ export default function RentalsTable({ initialRentals, csrf }: RentalsTableProps
         setError(data.error || 'Failed to cancel rental');
         setIsLoading(false);
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred. Please try again.');
       setIsLoading(false);
     }

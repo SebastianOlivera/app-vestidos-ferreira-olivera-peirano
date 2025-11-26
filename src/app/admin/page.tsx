@@ -4,16 +4,6 @@ import { redirect } from "next/navigation";
 import InventorySection from "@/src/components/admin/InventorySection";
 import RentalsTable from "@/src/components/admin/RentalsTable";
 
-type AdminItem = {
-  id: number | string;
-  name: string;
-  category: string;
-  sizes: string[];
-  color: string;
-  style: string;
-  pricePerDay: number;
-};
-
 export default async function Page() {
   if (!isAdmin()) redirect("/admin/login");
   const csrf = await getOrCreateCsrfToken();

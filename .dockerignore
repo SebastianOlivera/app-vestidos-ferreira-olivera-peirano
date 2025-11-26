@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Next.js
+.next
+out
+build
+
+# Testing
+test-results
+playwright-report
+.playwright
+
+# Misc
+.DS_Store
+*.log
+.env*.local
+
+# Git
+.git
+.gitignore

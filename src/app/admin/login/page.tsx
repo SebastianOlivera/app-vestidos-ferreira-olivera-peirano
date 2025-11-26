@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function AdminLogin() {
+function LoginForm() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -38,7 +38,7 @@ export default function AdminLogin() {
         setError(data.error || 'Invalid credentials');
         setIsLoading(false);
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred. Please try again.');
       setIsLoading(false);
     }
@@ -80,5 +80,21 @@ export default function AdminLogin() {
         <p className="text-xs text-slate-500">Protected area. Authorized staff only.</p>
       </form>
     </div>
+  );
+}
+
+export default function AdminLogin() {
+  return (
+    <Suspense fallback={
+      <div className="mx-auto max-w-md px-4 py-16">
+        <h1 className="text-2xl font-bold">Admin sign in</h1>
+        <div className="mt-6 grid gap-3 rounded-2xl border p-4">
+          <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded-xl h-12"></div>
+          <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded-xl h-12"></div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
