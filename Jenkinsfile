@@ -36,7 +36,6 @@ pipeline {
         }
 
         stage('Deploy') {
-            when { branch 'main' }
             steps {
                 sh """
                     docker tag ${IMAGE} ${APP_NAME}:latest
