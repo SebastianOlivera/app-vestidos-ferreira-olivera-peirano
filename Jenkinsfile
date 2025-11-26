@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:20-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     
     environment {
         DOCKER_IMAGE = 'vestidos-app'
@@ -39,6 +44,7 @@ pipeline {
         }
         
         stage('Build Docker Image') {
+            agent any
             steps {
                 sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                 sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
@@ -46,6 +52,7 @@ pipeline {
         }
         
         stage('Deploy') {
+            agent any
             steps {
                 sh "docker stop ${DOCKER_IMAGE} || true"
                 sh "docker rm ${DOCKER_IMAGE} || true"
@@ -62,7 +69,9 @@ pipeline {
             echo 'Pipeline failed.'
         }
         always {
-            sh 'docker image prune -f'
+            node('any') {
+                sh 'docker image prune -f || true'
+            }
         }
     }
 }
