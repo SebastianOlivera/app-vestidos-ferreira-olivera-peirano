@@ -10,55 +10,39 @@ pipeline {
     stages {
 
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
-        // Build one image that already has the code + node_modules + build
         stage('Build CI/Runtime Image') {
             steps {
-                sh """
-                    docker build -t ${IMAGE} .
-                """
+                sh """docker build -t ${IMAGE} ."""
             }
         }
 
-        // Run lint inside the built image (no mounts)
         stage('Lint') {
             steps {
-                sh """
-                    docker run --rm ${IMAGE} sh -c '
-                        npm run lint
-                    '
-                """
+                sh """docker run --rm ${IMAGE} sh -c 'npm run lint'"""
             }
         }
 
-        // Run Playwright E2E inside the same image
+        // Playwright runs using a dedicated image with browsers installed
         stage('E2E Tests') {
             steps {
                 sh """
-                    docker run --rm --ipc=host --shm-size=2gb ${IMAGE} sh -c '
-                        npx playwright install --with-deps &&
-                        npm run test:e2e
-                    '
+                    docker build -f Dockerfile.e2e -t vestidos-e2e:${TAG} .
+                    docker run --rm vestidos-e2e:${TAG}
                 """
             }
         }
 
-        // Only if everything above passed, tag and deploy
         stage('Deploy') {
-            when {
-                branch 'main'   // optional, but safer
-            }
+            when { branch 'main' }
             steps {
                 sh """
                     docker tag ${IMAGE} ${APP_NAME}:latest
 
                     docker stop ${APP_NAME} || true
-                    docker rm ${APP_NAME}   || true
-
+                    docker rm ${APP_NAME} || true
                     docker run -d -p 3000:3000 --name ${APP_NAME} ${APP_NAME}:latest
                 """
             }
@@ -66,15 +50,8 @@ pipeline {
     }
 
     post {
-        success {
-            echo "🚀 Pipeline passed (lint + E2E) and deployment completed."
-        }
-        failure {
-            echo "❌ Pipeline failed. App was not (re)deployed."
-        }
-        always {
-            // Clean dangling images but don't break the build if this fails
-            sh "docker image prune -f || true"
-        }
+        success { echo "🚀 Full Pipeline Passed (Lint + E2E + Deploy)" }
+        failure { echo "❌ Pipeline Failed" }
+        always { sh "docker image prune -f || true" }
     }
 }
