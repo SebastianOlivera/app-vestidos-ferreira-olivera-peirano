@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:20-alpine'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
     
     environment {
         DOCKER_IMAGE = 'vestidos-app'
@@ -20,31 +15,46 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                sh 'npm ci'
+                script {
+                    docker.image('node:20-alpine').inside {
+                        sh 'npm ci'
+                    }
+                }
             }
         }
         
         stage('Lint & Type Check') {
             steps {
-                sh 'npm run lint'
+                script {
+                    docker.image('node:20-alpine').inside {
+                        sh 'npm run lint'
+                    }
+                }
             }
         }
         
         stage('Build') {
             steps {
-                sh 'npm run build'
+                script {
+                    docker.image('node:20-alpine').inside {
+                        sh 'npm run build'
+                    }
+                }
             }
         }
         
         stage('Test E2E') {
             steps {
-                sh 'npx playwright install --with-deps'
-                sh 'npm run test:e2e'
+                script {
+                    docker.image('mcr.microsoft.com/playwright:v1.48.0-noble').inside {
+                        sh 'npm ci'
+                        sh 'npm run test:e2e'
+                    }
+                }
             }
         }
         
         stage('Build Docker Image') {
-            agent any
             steps {
                 sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                 sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
@@ -52,7 +62,6 @@ pipeline {
         }
         
         stage('Deploy') {
-            agent any
             steps {
                 sh "docker stop ${DOCKER_IMAGE} || true"
                 sh "docker rm ${DOCKER_IMAGE} || true"
@@ -69,9 +78,7 @@ pipeline {
             echo 'Pipeline failed.'
         }
         always {
-            node('any') {
-                sh 'docker image prune -f || true'
-            }
+            sh 'docker image prune -f || true'
         }
     }
 }
