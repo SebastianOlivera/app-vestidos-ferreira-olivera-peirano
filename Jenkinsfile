@@ -29,7 +29,7 @@ pipeline {
         stage('E2E Tests') {
             steps {
                 sh """
-                    docker build -f Dockerfile.e2e -t vestidos-e2e:${TAG} .
+                    docker build -f dockerfile.e2e -t vestidos-e2e:${TAG} .
                     docker run --rm vestidos-e2e:${TAG}
                 """
             }
