@@ -16,7 +16,7 @@ pipeline {
             steps {
                 sh """
                     docker run --rm -v \$(pwd):/app -w /app node:20-alpine sh -c "
-                        npm ci &&
+                        npm install &&
                         npm run lint
                     "
                 """
@@ -29,7 +29,7 @@ pipeline {
                     docker run --rm --ipc=host --shm-size=2gb \
                         -v \$(pwd):/app -w /app \
                         mcr.microsoft.com/playwright:v1.48.0-noble sh -c "
-                            npm ci &&
+                            npm install &&
                             npx playwright install --with-deps &&
                             npm run test:e2e
                         "
