@@ -10,17 +10,14 @@ test('CP-RF005-02: Reject rental with invalid email', async ({ page }) => {
   await page.getByLabel('End date').fill('2026-10-18');
   await page.click('button:has-text("Request rental")');
 
-  // 1) Chequear estado de validación
   const emailInput = page.getByLabel('Email');
 
   const validationMessage = await emailInput.evaluate(
     el => (el as HTMLInputElement).validationMessage
   );
 
-  // 2) Debe contener el texto del popup del navegador
   expect(validationMessage).toContain('@');
 
-  // 3) Debe ser inválido
   const validity = await emailInput.evaluate(el => (el as HTMLInputElement).validity.typeMismatch);
   expect(validity).toBe(true);
 });

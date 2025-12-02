@@ -12,7 +12,6 @@ test('CP-RF006-01: Admin can add a valid item', async ({ page }) => {
   await page.fill('input[placeholder*="Evening Gown"]', 'Blue Summer Dress');
   await page.selectOption('select:has(option[value="dress"])', 'dress');
   
-  // Target the checkbox label specifically (the one with cursor-pointer class)
   await page.locator('label.flex.items-center.gap-1.cursor-pointer:has-text("M")').click();
 
   await page.selectOption('select:has(option[value="blue"])', 'blue');
