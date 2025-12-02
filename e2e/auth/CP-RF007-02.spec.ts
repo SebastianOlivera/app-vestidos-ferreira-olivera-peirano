@@ -13,7 +13,6 @@ test.describe('CP-RF007-02 - Failed login with invalid credentials', () => {
     await page.click('button:has-text("Sign in")');
     
     // Wait a moment for the error to appear
-    await page.waitForTimeout(1000);
     
     // Verify error message is displayed
     const errorMessage = page.locator('[data-testid="login-error"]');

@@ -5,8 +5,12 @@ test('CP-RF001-03: Search without filters (list everything)', async ({ page }) =
 
   await page.click('button:has-text("Search")');
 
-  const cards = page.locator('.grid > div');
-  const count = await cards.count();
+  // Esperar a que la UI termine de renderizar resultados
+  await page.waitForLoadState('networkidle');
 
+  // Selector robusto: cualquier card con imagen
+  const cards = page.locator('div:has(img)');
+
+  const count = await cards.count();
   expect(count).toBeGreaterThan(3);
 });

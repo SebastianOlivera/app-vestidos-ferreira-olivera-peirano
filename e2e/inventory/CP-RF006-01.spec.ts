@@ -9,7 +9,6 @@ test('CP-RF006-01: Admin can add a valid item', async ({ page }) => {
   await page.waitForURL('/admin');
 
   await page.click('button:has-text("Add New Dress")');
-  await page.waitForTimeout(500);
   await page.fill('input[placeholder*="Evening Gown"]', 'Blue Summer Dress');
   await page.selectOption('select:has(option[value="dress"])', 'dress');
   
