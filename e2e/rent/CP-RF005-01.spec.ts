@@ -10,5 +10,5 @@ test('CP-RF005-01: Submit a valid rental request', async ({ page }) => {
   await page.getByLabel('End date').fill('2026-10-18');
   await page.click('button:has-text("Request rental")');
 
-  expect(page.url()).toContain('success=1');
+  expect(page.url()).toContain('/items/1');
 });
